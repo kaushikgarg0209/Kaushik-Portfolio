@@ -21,14 +21,13 @@ function SkillForm({
 }) {
   const [name, setName] = useState(item?.name ?? "");
   const [category, setCategory] = useState(item?.category ?? "General");
-  const [proficiency, setProficiency] = useState(item?.proficiency ?? 3);
   const [sortOrder, setSortOrder] = useState(item?.sortOrder ?? 0);
 
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        onSave({ name, category, proficiency, sortOrder });
+        onSave({ name, category, sortOrder });
       }}
       className="space-y-4"
     >
@@ -40,16 +39,6 @@ function SkillForm({
         <div className="space-y-2">
           <Label>Category</Label>
           <Input value={category} onChange={(e) => setCategory(e.target.value)} required />
-        </div>
-        <div className="space-y-2">
-          <Label>Proficiency (1-5)</Label>
-          <Input
-            type="number"
-            min={1}
-            max={5}
-            value={proficiency}
-            onChange={(e) => setProficiency(Number(e.target.value))}
-          />
         </div>
         <div className="space-y-2">
           <Label>Sort Order</Label>
@@ -80,7 +69,7 @@ export default function AdminSkillsPage() {
       apiPath="/api/admin/skills"
       emptyLabel="No skills yet. Add your first skill!"
       getItemTitle={(item) => item.name}
-      getItemSubtitle={(item) => `${item.category} · ${item.proficiency}/5`}
+      getItemSubtitle={(item) => item.category}
       renderForm={(item, onSave, onCancel, saving) => (
         <SkillForm item={item} onSave={onSave} onCancel={onCancel} saving={saving} />
       )}

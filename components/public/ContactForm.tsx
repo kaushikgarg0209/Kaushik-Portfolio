@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Send } from "lucide-react";
+import { Mail, Send } from "lucide-react";
 import { toast } from "sonner";
 
 import { SectionHeader } from "@/components/public/SectionHeader";
@@ -61,6 +61,7 @@ export function ContactForm({
   );
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [sending, setSending] = useState(false);
+  const [sentSuccess, setSentSuccess] = useState(false);
 
   const fieldErrors = useMemo(() => getFieldErrors(form), [form]);
 
@@ -96,10 +97,12 @@ export function ContactForm({
     });
 
     if (res.ok) {
+      setSentSuccess(true);
       toast.success("Message sent successfully!");
       setForm({ name: "", email: "", subject: "", message: "" });
       setTouched({});
       setSubmitAttempted(false);
+      setTimeout(() => setSentSuccess(false), 5000);
     } else {
       const data = await res.json();
       toast.error(data.error ?? "Failed to send message");
@@ -119,25 +122,27 @@ export function ContactForm({
       : null;
 
   return (
-    <SectionWrapper id="contact">
+    <SectionWrapper id="contact" variant="contact">
       <div className="mx-auto max-w-6xl px-6">
         <SectionHeader
-          command="$ npm run contact"
+          kicker="Contact"
           title="Get In Touch"
           subtitle="Have a project in mind? Let's talk."
         />
 
         <div className="grid gap-12 lg:grid-cols-2">
           <div>
-            <div className="glass rounded-xl p-6 font-mono text-sm">
-              <p className="text-slate-500">
-                <span className="text-green-400">user@portfolio</span>
-                <span className="text-slate-400">:</span>
-                <span className="text-cyan-400">~</span>
-                <span className="text-slate-400">$ </span>
-                <span className="text-white">echo $EMAIL</span>
-              </p>
-              <p className="mt-1 text-cyan-300">{email}</p>
+            <div className="glass rounded-xl p-6">
+              <div className="mb-2 flex items-center gap-2 text-sm text-slate-500">
+                <Mail className="h-4 w-4 text-cyan-400" />
+                Email
+              </div>
+              <a
+                href={`mailto:${email}`}
+                className="text-lg text-cyan-300 transition-colors hover:text-cyan-400"
+              >
+                {email}
+              </a>
             </div>
 
             {socialLinks.length > 0 && (
@@ -148,7 +153,7 @@ export function ContactForm({
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="glass rounded-lg px-4 py-2 font-mono text-sm text-slate-400 transition-colors hover:border-cyan-500/30 hover:text-cyan-400"
+                    className="glass rounded-lg px-4 py-2 text-sm text-slate-400 transition-colors hover:border-cyan-500/30 hover:text-cyan-400"
                   >
                     {link.label} →
                   </a>
@@ -161,10 +166,12 @@ export function ContactForm({
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <div className="mb-1 flex items-center justify-between">
-                  <label className="font-mono text-xs text-slate-500">--name</label>
+                  <label htmlFor="contact-name" className="text-sm text-slate-400">
+                    Name
+                  </label>
                   <span
                     className={cn(
-                      "font-mono text-xs",
+                      "text-xs",
                       charCountClass(form.name.length, CONTACT_FIELD_LIMITS.name),
                     )}
                   >
@@ -172,6 +179,7 @@ export function ContactForm({
                   </span>
                 </div>
                 <input
+                  id="contact-name"
                   value={form.name}
                   onChange={(e) => updateField("name", e.target.value)}
                   onBlur={() => markTouched("name")}
@@ -188,10 +196,12 @@ export function ContactForm({
               </div>
               <div>
                 <div className="mb-1 flex items-center justify-between">
-                  <label className="font-mono text-xs text-slate-500">--email</label>
+                  <label htmlFor="contact-email" className="text-sm text-slate-400">
+                    Email
+                  </label>
                   <span
                     className={cn(
-                      "font-mono text-xs",
+                      "text-xs",
                       charCountClass(form.email.length, CONTACT_FIELD_LIMITS.email),
                     )}
                   >
@@ -199,6 +209,7 @@ export function ContactForm({
                   </span>
                 </div>
                 <input
+                  id="contact-email"
                   type="email"
                   value={form.email}
                   onChange={(e) => updateField("email", e.target.value)}
@@ -217,10 +228,12 @@ export function ContactForm({
             </div>
             <div>
               <div className="mb-1 flex items-center justify-between">
-                <label className="font-mono text-xs text-slate-500">--subject</label>
+                <label htmlFor="contact-subject" className="text-sm text-slate-400">
+                  Subject
+                </label>
                 <span
                   className={cn(
-                    "font-mono text-xs",
+                    "text-xs",
                     charCountClass(form.subject.length, CONTACT_FIELD_LIMITS.subject),
                   )}
                 >
@@ -228,6 +241,7 @@ export function ContactForm({
                 </span>
               </div>
               <input
+                id="contact-subject"
                 value={form.subject}
                 onChange={(e) => updateField("subject", e.target.value)}
                 onBlur={() => markTouched("subject")}
@@ -244,10 +258,12 @@ export function ContactForm({
             </div>
             <div>
               <div className="mb-1 flex items-center justify-between">
-                <label className="font-mono text-xs text-slate-500">--message</label>
+                <label htmlFor="contact-message" className="text-sm text-slate-400">
+                  Message
+                </label>
                 <span
                   className={cn(
-                    "font-mono text-xs",
+                    "text-xs",
                     form.message.length >= 10 && form.message.length < CONTACT_FIELD_LIMITS.message
                       ? "text-green-400"
                       : charCountClass(form.message.length, CONTACT_FIELD_LIMITS.message),
@@ -257,6 +273,7 @@ export function ContactForm({
                 </span>
               </div>
               <textarea
+                id="contact-message"
                 value={form.message}
                 onChange={(e) => updateField("message", e.target.value)}
                 onBlur={() => markTouched("message")}
@@ -280,6 +297,13 @@ export function ContactForm({
                 </p>
               )}
             </div>
+
+            {sentSuccess && (
+              <p className="rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-400">
+                Message sent successfully — I&apos;ll get back to you soon.
+              </p>
+            )}
+
             <button
               type="submit"
               disabled={sending || (submitAttempted && !isValid)}

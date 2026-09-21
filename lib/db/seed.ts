@@ -114,36 +114,11 @@ async function seed() {
   ]);
 
   await db.insert(skills).values([
-    {
-      name: "TypeScript",
-      category: "Languages",
-      proficiency: 5,
-      sortOrder: 0,
-    },
-    {
-      name: "React",
-      category: "Frontend",
-      proficiency: 5,
-      sortOrder: 1,
-    },
-    {
-      name: "Next.js",
-      category: "Frontend",
-      proficiency: 5,
-      sortOrder: 2,
-    },
-    {
-      name: "Node.js",
-      category: "Backend",
-      proficiency: 4,
-      sortOrder: 3,
-    },
-    {
-      name: "PostgreSQL",
-      category: "Database",
-      proficiency: 4,
-      sortOrder: 4,
-    },
+    { name: "TypeScript", category: "Languages", sortOrder: 0 },
+    { name: "React", category: "Frontend", sortOrder: 1 },
+    { name: "Next.js", category: "Frontend", sortOrder: 2 },
+    { name: "Node.js", category: "Backend", sortOrder: 3 },
+    { name: "PostgreSQL", category: "Database", sortOrder: 4 },
   ]);
 
   await db.insert(projects).values([

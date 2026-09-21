@@ -1,4 +1,5 @@
 import { Navbar } from "@/components/public/Navbar";
+import { PublicShell } from "@/components/public/PublicShell";
 import { normalizeSectionVisibility } from "@/lib/sections";
 import { getSiteSettings } from "@/lib/db/queries";
 
@@ -19,9 +20,11 @@ export default async function PublicLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
-      <Navbar siteName={siteName} sectionVisibility={sectionVisibility} />
-      {children}
-    </div>
+    <PublicShell>
+      <div className="min-h-screen bg-[#0a0a0f]">
+        <Navbar siteName={siteName} sectionVisibility={sectionVisibility} />
+        {children}
+      </div>
+    </PublicShell>
   );
 }

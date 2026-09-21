@@ -1,24 +1,47 @@
-"use client";
+import { cn } from "@/lib/utils";
 
-import { motion } from "framer-motion";
+export type SectionVariant =
+  | "default"
+  | "stats"
+  | "skills"
+  | "experience"
+  | "projects"
+  | "education"
+  | "certifications"
+  | "testimonials"
+  | "contact";
+
+const variantClasses: Record<SectionVariant, string> = {
+  default: "section-atmosphere",
+  stats: "section-atmosphere section-stats",
+  skills: "section-atmosphere section-skills",
+  experience: "section-atmosphere section-experience bg-[#12121a]/40",
+  projects: "section-atmosphere section-projects",
+  education: "section-atmosphere section-education bg-[#12121a]/40",
+  certifications: "section-atmosphere section-certifications bg-[#12121a]/40",
+  testimonials: "section-atmosphere section-testimonials bg-[#12121a]/40",
+  contact: "section-atmosphere section-contact",
+};
 
 interface SectionWrapperProps {
   id: string;
   children: React.ReactNode;
   className?: string;
+  variant?: SectionVariant;
 }
 
-export function SectionWrapper({ id, children, className = "" }: SectionWrapperProps) {
+export function SectionWrapper({
+  id,
+  children,
+  className = "",
+  variant = "default",
+}: SectionWrapperProps) {
   return (
-    <motion.section
+    <section
       id={id}
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-      className={`py-24 ${className}`}
+      className={cn("relative py-24", variantClasses[variant], className)}
     >
       {children}
-    </motion.section>
+    </section>
   );
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Quote } from "lucide-react";
 import Image from "next/image";
 
@@ -16,23 +15,19 @@ export function TestimonialsSection({
   if (!testimonials.length) return null;
 
   return (
-    <SectionWrapper id="testimonials" className="bg-[#12121a]/50">
+    <SectionWrapper id="testimonials" variant="testimonials">
       <div className="mx-auto max-w-6xl px-6">
         <SectionHeader
-          command="$ cat testimonials.txt"
+          kicker="Testimonials"
           title="What People Say"
           subtitle="Recommendations from colleagues and clients"
         />
 
         <div className="grid gap-6 md:grid-cols-2">
-          {testimonials.map((t, i) => (
-            <motion.div
+          {testimonials.map((t) => (
+            <div
               key={t.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="glass relative rounded-xl p-6"
+              className="glass relative rounded-xl p-6 transition-shadow hover:-translate-y-1 hover:shadow-[0_0_24px_rgba(0,212,255,0.08)]"
             >
               <Quote className="absolute right-4 top-4 h-8 w-8 text-cyan-500/10" />
               <p className="mb-6 text-slate-300">&ldquo;{t.content}&rdquo;</p>
@@ -42,7 +37,7 @@ export function TestimonialsSection({
                     <Image src={t.avatarUrl} alt={t.name} fill className="object-cover" />
                   </div>
                 ) : (
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-500/10 font-mono text-sm text-cyan-400">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-500/10 text-sm font-medium text-cyan-400">
                     {t.name.charAt(0)}
                   </div>
                 )}
@@ -53,7 +48,7 @@ export function TestimonialsSection({
                   </p>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Award, ExternalLink } from "lucide-react";
 import Image from "next/image";
 
@@ -18,21 +17,14 @@ export function CertificationsSection({
     <SectionWrapper id="certifications">
       <div className="mx-auto max-w-6xl px-6">
         <SectionHeader
-          command="$ ls certifications/"
+          kicker="Certifications"
           title="Certifications"
           subtitle="Professional credentials"
         />
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {certifications.map((cert, i) => (
-            <motion.div
-              key={cert.id}
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.08 }}
-              className="glass rounded-xl p-5"
-            >
+          {certifications.map((cert) => (
+            <div key={cert.id} className="glass rounded-xl p-5">
               <div className="mb-3 flex items-start gap-3">
                 {cert.badgeImageUrl ? (
                   <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg">
@@ -61,7 +53,7 @@ export function CertificationsSection({
                   Verify <ExternalLink className="h-3 w-3" />
                 </a>
               )}
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

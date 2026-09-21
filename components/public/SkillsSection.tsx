@@ -1,62 +1,121 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 import { SectionHeader } from "@/components/public/SectionHeader";
 import { SectionWrapper } from "@/components/public/SectionWrapper";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import type { Skill } from "@/lib/db/schema";
+import { cn } from "@/lib/utils";
 
 export function SkillsSection({ skills }: { skills: Skill[] }) {
   const categories = [...new Set(skills.map((s) => s.category))];
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const reducedMotion = useReducedMotion();
+
+  const displayed = activeCategory
+    ? skills.filter((s) => s.category === activeCategory)
+    : skills;
+
+  const grouped = activeCategory
+    ? [{ category: activeCategory, items: displayed }]
+    : categories.map((category) => ({
+        category,
+        items: skills.filter((s) => s.category === category),
+      }));
+
+  const filterKey = activeCategory ?? "all";
 
   return (
-    <SectionWrapper id="skills">
+    <SectionWrapper id="skills" variant="skills">
       <div className="mx-auto max-w-6xl px-6">
         <SectionHeader
-          command="$ ls skills/"
+          kicker="Skills"
           title="Skills & Technologies"
           subtitle="Tools and technologies I work with"
         />
 
-        <div className="space-y-8">
-          {categories.map((category) => (
-            <div key={category}>
-              <h3 className="mb-4 font-mono text-sm text-purple-400">
-                ./skills/{category.toLowerCase().replace(/\s+/g, "-")}
-              </h3>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {skills
-                  .filter((s) => s.category === category)
-                  .map((skill, i) => (
-                    <motion.div
-                      key={skill.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: i * 0.05 }}
-                      className="glass rounded-lg p-4"
-                    >
-                      <div className="mb-2 flex items-center justify-between">
-                        <span className="font-medium text-white">{skill.name}</span>
-                        <span className="font-mono text-xs text-cyan-400">
-                          {skill.proficiency}/5
-                        </span>
-                      </div>
-                      <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          whileInView={{ width: `${(skill.proficiency / 5) * 100}%` }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 0.8, delay: i * 0.05 }}
-                          className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-purple-500"
-                        />
-                      </div>
-                    </motion.div>
-                  ))}
-              </div>
+        {categories.length > 1 && (
+          <div className="mb-8">
+            <p className="mb-3 text-sm text-slate-500">Filter by category</p>
+            <div className="relative flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveCategory(null)}
+                className={cn(
+                  "relative rounded-full px-4 py-1.5 text-sm transition-colors",
+                  !activeCategory
+                    ? "text-cyan-400"
+                    : "bg-white/5 text-slate-400 hover:text-white",
+                )}
+              >
+                {!activeCategory && (
+                  <motion.span
+                    layoutId="skill-tab"
+                    className="absolute inset-0 rounded-full bg-cyan-500/20"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <span className="relative">All</span>
+              </button>
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => setActiveCategory(category)}
+                  className={cn(
+                    "relative rounded-full px-4 py-1.5 text-sm transition-colors",
+                    activeCategory === category
+                      ? "text-cyan-400"
+                      : "bg-white/5 text-slate-400 hover:text-white",
+                  )}
+                >
+                  {activeCategory === category && (
+                    <motion.span
+                      layoutId="skill-tab"
+                      className="absolute inset-0 rounded-full bg-cyan-500/20"
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <span className="relative">{category}</span>
+                </button>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        )}
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={filterKey}
+            initial={reducedMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={reducedMotion ? undefined : { opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="space-y-8"
+          >
+            {grouped.map(({ category, items }) => (
+              <div key={category}>
+                {!activeCategory && (
+                  <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-purple-400">
+                    {category}
+                  </h3>
+                )}
+                <div className="flex flex-wrap gap-3">
+                  {items.map((skill) => (
+                    <motion.span
+                      key={skill.id}
+                      whileHover={reducedMotion ? undefined : { scale: 1.05 }}
+                      className="glass cursor-default rounded-full px-4 py-2 text-sm text-slate-300 transition-colors hover:border-cyan-500/30 hover:text-cyan-400"
+                    >
+                      {skill.name}
+                    </motion.span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </SectionWrapper>
   );

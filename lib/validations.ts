@@ -99,7 +99,6 @@ export const socialLinkSchema = z.object({
 export const skillSchema = z.object({
   name: requiredString("Name"),
   category: requiredString("Category"),
-  proficiency: z.coerce.number().min(1).max(5),
   icon: optionalString,
   yearsUsed: z.coerce.number().optional(),
   sortOrder: z.coerce.number().default(0),

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { CertificationsSection } from "@/components/public/CertificationsSection";
 import { ContactForm } from "@/components/public/ContactForm";
@@ -13,6 +14,8 @@ import { SkillsSection } from "@/components/public/SkillsSection";
 import { StatsBar } from "@/components/public/StatsBar";
 import { TerminalBoot } from "@/components/public/TerminalBoot";
 import { TestimonialsSection } from "@/components/public/TestimonialsSection";
+import { useKonamiCode } from "@/hooks/useKonamiCode";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import {
   isSectionVisible,
   normalizeSectionVisibility,
@@ -67,9 +70,20 @@ export function PortfolioHome({
   const sectionVisibility: SectionVisibility = normalizeSectionVisibility(
     settings?.sectionVisibility,
   );
+  const reducedMotion = useReducedMotion();
   const [introReady, setIntroReady] = useState(
     () => !terminalBootEnabled || wasBootSkipped(),
   );
+  const [boostActive, setBoostActive] = useState(false);
+
+  const handleKonami = useCallback(() => {
+    if (reducedMotion) return;
+    setBoostActive(true);
+    toast.success("Dev mode unlocked — nice find.");
+    setTimeout(() => setBoostActive(false), 5000);
+  }, [reducedMotion]);
+
+  useKonamiCode(handleKonami, !reducedMotion);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -95,7 +109,7 @@ export function PortfolioHome({
         onComplete={() => setIntroReady(true)}
       />
 
-      <Hero profile={profile} introReady={introReady} />
+      <Hero profile={profile} introReady={introReady} boostActive={boostActive} />
 
       {introReady && (
         <>
