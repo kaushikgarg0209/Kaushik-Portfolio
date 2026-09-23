@@ -1,5 +1,6 @@
 import { asc, eq } from "drizzle-orm";
 
+import { runAdminQuery } from "@/lib/admin-db";
 import { requireAdminSession, jsonError, jsonSuccess } from "@/lib/api-auth";
 import { validationErrorResponse } from "@/lib/api-utils";
 import { db } from "@/lib/db";
@@ -11,11 +12,11 @@ export async function GET() {
   const { error } = await requireAdminSession();
   if (error) return error;
 
-  const data = await db
-    .select()
-    .from(certifications)
-    .orderBy(asc(certifications.sortOrder));
-  return jsonSuccess(data);
+  const result = await runAdminQuery("certifications", () =>
+    db.select().from(certifications).orderBy(asc(certifications.sortOrder)),
+  );
+  if (result.error) return result.error;
+  return jsonSuccess(result.data);
 }
 
 export async function POST(request: Request) {
@@ -77,7 +78,10 @@ export async function DELETE(request: Request) {
   const id = searchParams.get("id");
   if (!id) return jsonError("ID is required");
 
-  await db.delete(certifications).where(eq(certifications.id, id));
+  const result = await runAdminQuery("certifications.delete", () =>
+    db.delete(certifications).where(eq(certifications.id, id)),
+  );
+  if (result.error) return result.error;
   revalidatePortfolio();
   return jsonSuccess({ success: true });
 }

@@ -1,5 +1,6 @@
 import { desc, eq } from "drizzle-orm";
 
+import { runAdminQuery } from "@/lib/admin-db";
 import { requireAdminSession, jsonError, jsonSuccess } from "@/lib/api-auth";
 import { db } from "@/lib/db";
 import { contactMessages } from "@/lib/db/schema";
@@ -8,11 +9,14 @@ export async function GET() {
   const { error } = await requireAdminSession();
   if (error) return error;
 
-  const data = await db
-    .select()
-    .from(contactMessages)
-    .orderBy(desc(contactMessages.createdAt));
-  return jsonSuccess(data);
+  const result = await runAdminQuery("contactMessages", () =>
+    db
+      .select()
+      .from(contactMessages)
+      .orderBy(desc(contactMessages.createdAt)),
+  );
+  if (result.error) return result.error;
+  return jsonSuccess(result.data);
 }
 
 export async function PATCH(request: Request) {
@@ -44,6 +48,9 @@ export async function DELETE(request: Request) {
   const id = searchParams.get("id");
   if (!id) return jsonError("ID is required");
 
-  await db.delete(contactMessages).where(eq(contactMessages.id, id));
+  const result = await runAdminQuery("contactMessages.delete", () =>
+    db.delete(contactMessages).where(eq(contactMessages.id, id)),
+  );
+  if (result.error) return result.error;
   return jsonSuccess({ success: true });
 }

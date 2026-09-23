@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 
+import { runAdminQuery } from "@/lib/admin-db";
 import { requireAdminSession, jsonError, jsonSuccess } from "@/lib/api-auth";
 import { parseBody, serverErrorResponse, validationErrorResponse } from "@/lib/api-utils";
 import { db } from "@/lib/db";
@@ -11,8 +12,12 @@ export async function GET() {
   const { error } = await requireAdminSession();
   if (error) return error;
 
-  const [data] = await db.select().from(profile).limit(1);
-  return jsonSuccess(data ?? null);
+  const result = await runAdminQuery("profile", async () => {
+    const [data] = await db.select().from(profile).limit(1);
+    return data ?? null;
+  });
+  if (result.error) return result.error;
+  return jsonSuccess(result.data);
 }
 
 export async function PUT(request: Request) {

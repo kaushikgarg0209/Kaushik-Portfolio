@@ -3,8 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import {
   ArrowLeft,
   ArrowRight,
@@ -14,6 +12,7 @@ import {
   FolderGit2,
 } from "lucide-react";
 
+import { MarkdownContent } from "@/components/public/MarkdownContent";
 import { getMotionProps, useReducedMotion } from "@/hooks/useReducedMotion";
 import type { Project } from "@/lib/db/schema";
 
@@ -298,11 +297,7 @@ export function ProjectDetailView({
                 className="glass rounded-xl p-6 md:p-8"
               >
                 <h2 className="mb-6 text-xl font-semibold text-white">Overview</h2>
-                <div className="prose prose-invert max-w-none prose-headings:font-semibold prose-headings:text-white prose-p:text-slate-300 prose-li:text-slate-300 prose-strong:text-white prose-a:text-cyan-400 prose-code:rounded prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-cyan-300 prose-pre:border prose-pre:border-white/10 prose-pre:bg-black/40">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {project.description}
-                  </ReactMarkdown>
-                </div>
+                <MarkdownContent content={project.description} />
               </motion.div>
             )}
 

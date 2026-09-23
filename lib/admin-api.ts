@@ -27,12 +27,14 @@ export async function adminFetch<T = unknown>(
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
+      const fallback =
+        res.status === 503
+          ? "Database connection timed out — click Retry"
+          : `Request failed (${res.status})`;
       return {
         ok: false,
         error:
-          typeof data.error === "string"
-            ? data.error
-            : `Request failed (${res.status})`,
+          typeof data.error === "string" ? data.error : fallback,
         details: Array.isArray(data.details) ? data.details : [],
       };
     }

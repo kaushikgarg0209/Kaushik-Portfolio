@@ -1,5 +1,6 @@
 import { asc, eq } from "drizzle-orm";
 
+import { runAdminQuery } from "@/lib/admin-db";
 import { requireAdminSession, jsonError, jsonSuccess } from "@/lib/api-auth";
 import { validationErrorResponse } from "@/lib/api-utils";
 import { db } from "@/lib/db";
@@ -11,8 +12,11 @@ export async function GET() {
   const { error } = await requireAdminSession();
   if (error) return error;
 
-  const data = await db.select().from(experience).orderBy(asc(experience.sortOrder));
-  return jsonSuccess(data);
+  const result = await runAdminQuery("experience", () =>
+    db.select().from(experience).orderBy(asc(experience.sortOrder)),
+  );
+  if (result.error) return result.error;
+  return jsonSuccess(result.data);
 }
 
 export async function POST(request: Request) {
@@ -26,7 +30,10 @@ export async function POST(request: Request) {
       return validationErrorResponse(parsed.error);
     }
 
-    const [created] = await db.insert(experience).values(parsed.data).returning();
+    const [created] = await db
+      .insert(experience)
+      .values({ ...parsed.data, endDate: parsed.data.endDate ?? null })
+      .returning();
     revalidatePortfolio();
     return jsonSuccess(created, 201);
   } catch (err) {
@@ -51,7 +58,11 @@ export async function PUT(request: Request) {
 
     const [updated] = await db
       .update(experience)
-      .set({ ...parsed.data, updatedAt: new Date() })
+      .set({
+        ...parsed.data,
+        endDate: parsed.data.endDate ?? null,
+        updatedAt: new Date(),
+      })
       .where(eq(experience.id, id))
       .returning();
 
@@ -71,7 +82,10 @@ export async function DELETE(request: Request) {
   const id = searchParams.get("id");
   if (!id) return jsonError("ID is required");
 
-  await db.delete(experience).where(eq(experience.id, id));
+  const result = await runAdminQuery("experience.delete", () =>
+    db.delete(experience).where(eq(experience.id, id)),
+  );
+  if (result.error) return result.error;
   revalidatePortfolio();
   return jsonSuccess({ success: true });
 }

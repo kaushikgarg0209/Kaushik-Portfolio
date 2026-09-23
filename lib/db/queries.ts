@@ -1,16 +1,7 @@
 import { asc, desc, eq } from "drizzle-orm";
 
 import { db } from "@/lib/db";
-
-async function safeQuery<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
-  try {
-    if (!process.env.POSTGRES_URL) return fallback;
-    return await fn();
-  } catch (error) {
-    console.error("Database query failed:", error);
-    return fallback;
-  }
-}
+import { DbQueryError, queryWithRetry } from "@/lib/db/query-utils";
 import {
   certifications,
   contactMessages,
@@ -25,160 +16,168 @@ import {
   testimonials,
 } from "@/lib/db/schema";
 
+async function runQuery<T>(label: string, fn: () => Promise<T>): Promise<T> {
+  return queryWithRetry(fn, { label });
+}
+
 export async function getSiteSettings() {
-  return safeQuery(async () => {
-    const [settings] = await db.select().from(siteSettings).limit(1);
-    return settings ?? null;
-  }, null);
+  const [settings] = await runQuery("siteSettings", () =>
+    db.select().from(siteSettings).limit(1),
+  );
+  return settings ?? null;
 }
 
 export async function getProfile() {
-  return safeQuery(async () => {
-    const [data] = await db.select().from(profile).limit(1);
-    return data ?? null;
-  }, null);
+  const [data] = await runQuery("profile", () =>
+    db.select().from(profile).limit(1),
+  );
+  return data ?? null;
 }
 
 export async function getSocialLinks() {
-  return safeQuery(
-    () => db.select().from(socialLinks).orderBy(asc(socialLinks.sortOrder)),
-    [],
+  return runQuery("socialLinks", () =>
+    db.select().from(socialLinks).orderBy(asc(socialLinks.sortOrder)),
   );
 }
 
 export async function getSkills() {
-  return safeQuery(
-    () => db.select().from(skills).orderBy(asc(skills.sortOrder)),
-    [],
+  return runQuery("skills", () =>
+    db.select().from(skills).orderBy(asc(skills.sortOrder)),
   );
 }
 
 export async function getProjects() {
-  return safeQuery(
-    () => db.select().from(projects).orderBy(asc(projects.sortOrder)),
-    [],
+  return runQuery("projects", () =>
+    db.select().from(projects).orderBy(asc(projects.sortOrder)),
   );
 }
 
 export async function getFeaturedProjects() {
-  return safeQuery(
-    () =>
-      db
-        .select()
-        .from(projects)
-        .where(eq(projects.featured, true))
-        .orderBy(asc(projects.sortOrder)),
-    [],
+  return runQuery("featuredProjects", () =>
+    db
+      .select()
+      .from(projects)
+      .where(eq(projects.featured, true))
+      .orderBy(asc(projects.sortOrder)),
   );
 }
 
 export async function getProjectBySlug(slug: string) {
-  return safeQuery(async () => {
-    const [project] = await db
-      .select()
-      .from(projects)
-      .where(eq(projects.slug, slug))
-      .limit(1);
-    return project ?? null;
-  }, null);
+  const [project] = await runQuery("projectBySlug", () =>
+    db.select().from(projects).where(eq(projects.slug, slug)).limit(1),
+  );
+  return project ?? null;
 }
 
 export async function getExperience() {
-  return safeQuery(
-    () => db.select().from(experience).orderBy(desc(experience.startDate)),
-    [],
+  return runQuery("experience", () =>
+    db.select().from(experience).orderBy(desc(experience.startDate)),
   );
 }
 
 export async function getEducation() {
-  return safeQuery(
-    () => db.select().from(education).orderBy(desc(education.startDate)),
-    [],
+  return runQuery("education", () =>
+    db.select().from(education).orderBy(desc(education.startDate)),
   );
 }
 
 export async function getCertifications() {
-  return safeQuery(
-    () =>
-      db
-        .select()
-        .from(certifications)
-        .orderBy(desc(certifications.issueDate)),
-    [],
+  return runQuery("certifications", () =>
+    db
+      .select()
+      .from(certifications)
+      .orderBy(desc(certifications.issueDate)),
   );
 }
 
 export async function getTestimonials() {
-  return safeQuery(
-    () =>
-      db.select().from(testimonials).orderBy(asc(testimonials.sortOrder)),
-    [],
+  return runQuery("testimonials", () =>
+    db.select().from(testimonials).orderBy(asc(testimonials.sortOrder)),
   );
 }
 
 export async function getStats() {
-  return safeQuery(
-    () => db.select().from(stats).orderBy(asc(stats.sortOrder)),
-    [],
+  return runQuery("stats", () =>
+    db.select().from(stats).orderBy(asc(stats.sortOrder)),
   );
 }
 
 export async function getContactMessages() {
-  return safeQuery(
-    () =>
-      db
-        .select()
-        .from(contactMessages)
-        .orderBy(desc(contactMessages.createdAt)),
-    [],
+  return runQuery("contactMessages", () =>
+    db
+      .select()
+      .from(contactMessages)
+      .orderBy(desc(contactMessages.createdAt)),
   );
 }
 
 export async function getUnreadMessageCount() {
-  return safeQuery(async () => {
-    const messages = await db
+  const messages = await runQuery("unreadMessages", () =>
+    db
       .select()
       .from(contactMessages)
-      .where(eq(contactMessages.read, false));
-    return messages.length;
-  }, 0);
+      .where(eq(contactMessages.read, false)),
+  );
+  return messages.length;
+}
+
+export class PortfolioDataLoadError extends Error {
+  readonly failures: string[];
+
+  constructor(failures: string[]) {
+    super(`Portfolio data failed to load: ${failures.join(", ")}`);
+    this.name = "PortfolioDataLoadError";
+    this.failures = failures;
+  }
 }
 
 export async function getPortfolioData() {
-  const [
-    settings,
-    profileData,
-    socialLinksData,
-    skillsData,
-    projectsData,
-    experienceData,
-    educationData,
-    certificationsData,
-    testimonialsData,
-    statsData,
-  ] = await Promise.all([
-    getSiteSettings(),
-    getProfile(),
-    getSocialLinks(),
-    getSkills(),
-    getProjects(),
-    getExperience(),
-    getEducation(),
-    getCertifications(),
-    getTestimonials(),
-    getStats(),
+  const results = await Promise.allSettled([
+    getSiteSettings().then((data) => ({ key: "settings", data })),
+    getProfile().then((data) => ({ key: "profile", data })),
+    getSocialLinks().then((data) => ({ key: "socialLinks", data })),
+    getSkills().then((data) => ({ key: "skills", data })),
+    getProjects().then((data) => ({ key: "projects", data })),
+    getExperience().then((data) => ({ key: "experience", data })),
+    getEducation().then((data) => ({ key: "education", data })),
+    getCertifications().then((data) => ({ key: "certifications", data })),
+    getTestimonials().then((data) => ({ key: "testimonials", data })),
+    getStats().then((data) => ({ key: "stats", data })),
   ]);
 
+  const failures: string[] = [];
+  const data: Record<string, unknown> = {};
+
+  for (const result of results) {
+    if (result.status === "rejected") {
+      const label =
+        result.reason instanceof DbQueryError
+          ? result.reason.label
+          : "unknown";
+      failures.push(label);
+      continue;
+    }
+    data[result.value.key] = result.value.data;
+  }
+
+  if (failures.length > 0) {
+    throw new PortfolioDataLoadError(failures);
+  }
+
   return {
-    settings,
-    profile: profileData,
-    socialLinks: socialLinksData,
-    skills: skillsData,
-    projects: projectsData,
-    experience: experienceData,
-    education: educationData,
-    certifications: certificationsData,
-    testimonials: testimonialsData,
-    stats: statsData,
+    settings: data.settings as Awaited<ReturnType<typeof getSiteSettings>>,
+    profile: data.profile as Awaited<ReturnType<typeof getProfile>>,
+    socialLinks: data.socialLinks as Awaited<ReturnType<typeof getSocialLinks>>,
+    skills: data.skills as Awaited<ReturnType<typeof getSkills>>,
+    projects: data.projects as Awaited<ReturnType<typeof getProjects>>,
+    experience: data.experience as Awaited<ReturnType<typeof getExperience>>,
+    education: data.education as Awaited<ReturnType<typeof getEducation>>,
+    certifications: data.certifications as Awaited<
+      ReturnType<typeof getCertifications>
+    >,
+    testimonials: data.testimonials as Awaited<
+      ReturnType<typeof getTestimonials>
+    >,
+    stats: data.stats as Awaited<ReturnType<typeof getStats>>,
   };
 }

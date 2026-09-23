@@ -14,6 +14,7 @@ interface ImageUploadProps {
   folder?: string;
   accept?: string;
   label?: string;
+  inputId?: string;
   className?: string;
 }
 
@@ -24,6 +25,7 @@ export function ImageUpload({
   folder = "uploads",
   accept = "image/*",
   label = "Upload image",
+  inputId = "image-upload-input",
   className,
 }: ImageUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -93,9 +95,11 @@ export function ImageUpload({
         </button>
       )}
       <input
+        id={inputId}
         ref={inputRef}
         type="file"
         accept={accept}
+        aria-label={label}
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0];

@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 
+import { runAdminQuery } from "@/lib/admin-db";
 import { requireAdminSession, jsonSuccess } from "@/lib/api-auth";
 import { parseBody, serverErrorResponse } from "@/lib/api-utils";
 import { db } from "@/lib/db";
@@ -12,13 +13,16 @@ export async function GET() {
   const { error } = await requireAdminSession();
   if (error) return error;
 
-  const [data] = await db.select().from(siteSettings).limit(1);
-  if (!data) return jsonSuccess(null);
-
-  return jsonSuccess({
-    ...data,
-    sectionVisibility: normalizeSectionVisibility(data.sectionVisibility),
+  const result = await runAdminQuery("siteSettings", async () => {
+    const [data] = await db.select().from(siteSettings).limit(1);
+    if (!data) return null;
+    return {
+      ...data,
+      sectionVisibility: normalizeSectionVisibility(data.sectionVisibility),
+    };
   });
+  if (result.error) return result.error;
+  return jsonSuccess(result.data);
 }
 
 export async function PUT(request: Request) {

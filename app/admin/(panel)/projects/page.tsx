@@ -87,8 +87,14 @@ function ProjectForm({
         />
       </div>
       <div className="space-y-2">
-        <Label>Thumbnail</Label>
-        <ImageUpload value={thumbnailUrl} onChange={setThumbnailUrl} folder="projects" />
+        <Label htmlFor="project-thumbnail-upload">Thumbnail</Label>
+        <ImageUpload
+          inputId="project-thumbnail-upload"
+          value={thumbnailUrl}
+          onChange={setThumbnailUrl}
+          folder="projects"
+          label="Upload project thumbnail"
+        />
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">

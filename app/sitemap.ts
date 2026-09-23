@@ -3,10 +3,21 @@ import type { MetadataRoute } from "next";
 import { getProjects, getSiteSettings } from "@/lib/db/queries";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [settings, projects] = await Promise.all([
-    getSiteSettings(),
-    getProjects(),
-  ]);
+  let settings = null;
+  let projects: Awaited<ReturnType<typeof getProjects>> = [];
+
+  try {
+    [settings, projects] = await Promise.all([getSiteSettings(), getProjects()]);
+  } catch {
+    return [
+      {
+        url: "http://localhost:3000",
+        lastModified: new Date(),
+        changeFrequency: "weekly",
+        priority: 1,
+      },
+    ];
+  }
 
   const baseUrl = settings?.siteUrl ?? "http://localhost:3000";
 

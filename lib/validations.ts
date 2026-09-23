@@ -10,6 +10,11 @@ const nullToUndefined = (val: unknown) =>
 
 const optionalString = z.preprocess(nullToUndefined, z.string().optional());
 
+const optionalNullableDate = z.preprocess(
+  (val) => (val === "" || val === undefined ? null : val),
+  z.string().nullable(),
+);
+
 const requiredString = (label: string) =>
   z.preprocess(
     nullToEmpty,
@@ -132,7 +137,7 @@ export const experienceSchema = z.object({
     "freelance",
   ]),
   startDate: requiredString("Start date"),
-  endDate: optionalString,
+  endDate: optionalNullableDate,
   description: z.preprocess(nullToEmpty, z.string()),
   achievements: stringArray,
   techUsed: stringArray,
@@ -145,7 +150,7 @@ export const educationSchema = z.object({
   degree: requiredString("Degree"),
   field: z.preprocess(nullToEmpty, z.string()),
   startDate: requiredString("Start date"),
-  endDate: optionalString,
+  endDate: optionalNullableDate,
   grade: optionalString,
   description: optionalString,
   sortOrder: z.coerce.number().default(0),

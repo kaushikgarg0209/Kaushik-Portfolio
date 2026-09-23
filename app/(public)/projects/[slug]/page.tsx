@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ProjectDetailView } from "@/components/public/ProjectDetailView";
 import { getProjectBySlug, getProjects } from "@/lib/db/queries";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 export async function generateStaticParams() {
   try {

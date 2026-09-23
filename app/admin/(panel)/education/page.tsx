@@ -9,6 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { Education } from "@/lib/db/schema";
 
+function formatDateInput(value: string | null | undefined) {
+  if (!value) return "";
+  return value.slice(0, 10);
+}
+
 function EducationForm({
   item,
   onSave,
@@ -23,8 +28,8 @@ function EducationForm({
   const [institution, setInstitution] = useState(item?.institution ?? "");
   const [degree, setDegree] = useState(item?.degree ?? "");
   const [field, setField] = useState(item?.field ?? "");
-  const [startDate, setStartDate] = useState(item?.startDate ?? "");
-  const [endDate, setEndDate] = useState(item?.endDate ?? "");
+  const [startDate, setStartDate] = useState(formatDateInput(item?.startDate));
+  const [endDate, setEndDate] = useState(formatDateInput(item?.endDate));
   const [grade, setGrade] = useState(item?.grade ?? "");
   const [description, setDescription] = useState(item?.description ?? "");
   const [sortOrder, setSortOrder] = useState(item?.sortOrder ?? 0);
@@ -38,7 +43,7 @@ function EducationForm({
           degree,
           field,
           startDate,
-          endDate: endDate || undefined,
+          endDate: endDate.trim() || null,
           grade: grade || undefined,
           description: description || undefined,
           sortOrder,

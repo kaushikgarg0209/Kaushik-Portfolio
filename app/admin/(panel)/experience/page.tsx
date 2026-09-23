@@ -10,6 +10,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { Experience } from "@/lib/db/schema";
 
+function formatDateInput(value: string | null | undefined) {
+  if (!value) return "";
+  return value.slice(0, 10);
+}
+
 function ExperienceForm({
   item,
   onSave,
@@ -25,8 +30,9 @@ function ExperienceForm({
   const [role, setRole] = useState(item?.role ?? "");
   const [location, setLocation] = useState(item?.location ?? "Remote");
   const [employmentType, setEmploymentType] = useState(item?.employmentType ?? "full_time");
-  const [startDate, setStartDate] = useState(item?.startDate ?? "");
-  const [endDate, setEndDate] = useState(item?.endDate ?? "");
+  const [startDate, setStartDate] = useState(formatDateInput(item?.startDate));
+  const [endDate, setEndDate] = useState(formatDateInput(item?.endDate));
+  const [isCurrent, setIsCurrent] = useState(!item?.endDate);
   const [description, setDescription] = useState(item?.description ?? "");
   const [achievements, setAchievements] = useState<string[]>(item?.achievements ?? []);
   const [techUsed, setTechUsed] = useState<string[]>(item?.techUsed ?? []);
@@ -42,7 +48,7 @@ function ExperienceForm({
           location,
           employmentType,
           startDate,
-          endDate: endDate || undefined,
+          endDate: isCurrent ? null : endDate.trim() || null,
           description,
           achievements,
           techUsed,
@@ -82,8 +88,26 @@ function ExperienceForm({
           <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
         </div>
         <div className="space-y-2">
-          <Label>End Date (leave empty if current)</Label>
-          <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+          <Label htmlFor="experience-end-date">End Date</Label>
+          <Input
+            id="experience-end-date"
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            disabled={isCurrent}
+          />
+          <label className="flex items-center gap-2 text-sm text-slate-400">
+            <input
+              type="checkbox"
+              checked={isCurrent}
+              onChange={(e) => {
+                setIsCurrent(e.target.checked);
+                if (e.target.checked) setEndDate("");
+              }}
+              className="rounded border-white/20"
+            />
+            I currently work here
+          </label>
         </div>
       </div>
       <div className="space-y-2">

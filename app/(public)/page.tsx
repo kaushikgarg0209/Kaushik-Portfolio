@@ -1,10 +1,19 @@
 import { PortfolioHome } from "@/components/public/PortfolioHome";
-import { getPortfolioData } from "@/lib/db/queries";
+import { PortfolioLoadError } from "@/components/public/PortfolioLoadError";
+import { getPortfolioData, PortfolioDataLoadError } from "@/lib/db/queries";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const data = await getPortfolioData();
+  let data;
+
+  try {
+    data = await getPortfolioData();
+  } catch (error) {
+    const failures =
+      error instanceof PortfolioDataLoadError ? error.failures : undefined;
+    return <PortfolioLoadError failures={failures} />;
+  }
 
   if (data.settings?.maintenanceMode) {
     return (
