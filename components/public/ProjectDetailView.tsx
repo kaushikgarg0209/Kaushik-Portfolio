@@ -105,14 +105,16 @@ export function ProjectDetailView({
   const techStack = (project.techStack as string[]) ?? [];
 
   return (
-    <article className="relative min-h-screen overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 grid-bg" />
-      <div className="pointer-events-none absolute -left-32 top-24 h-96 w-96 rounded-full bg-cyan-500/5 blur-3xl" />
-      <div className="pointer-events-none absolute -right-32 top-64 h-96 w-96 rounded-full bg-purple-500/5 blur-3xl" />
+    <article className="relative min-h-screen">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 grid-bg" />
+        <div className="absolute -left-32 top-24 h-96 w-96 rounded-full bg-cyan-500/5 blur-3xl" />
+        <div className="absolute -right-32 top-64 h-96 w-96 rounded-full bg-purple-500/5 blur-3xl" />
+      </div>
 
       {/* Hero */}
       <header className="relative pt-24 pb-12">
-        <div className="mx-auto max-w-6xl px-6">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <motion.div
             {...getMotionProps(reducedMotion)}
             initial={reducedMotion ? false : { opacity: 0, y: 16 }}
@@ -216,7 +218,7 @@ export function ProjectDetailView({
       </header>
 
       {/* Body */}
-      <div className="relative mx-auto max-w-6xl px-6 pb-24">
+      <div className="relative mx-auto max-w-6xl px-4 pb-24 sm:px-6">
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Sidebar */}
           <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
@@ -288,13 +290,13 @@ export function ProjectDetailView({
           </aside>
 
           {/* Main content */}
-          <div className="space-y-8 lg:col-span-2">
+          <div className="min-w-0 space-y-8 lg:col-span-2">
             {project.description && (
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="glass rounded-xl p-6 md:p-8"
+                className="glass min-w-0 rounded-xl p-4 sm:p-6 md:p-8"
               >
                 <h2 className="mb-6 text-xl font-semibold text-white">Overview</h2>
                 <MarkdownContent content={project.description} />
