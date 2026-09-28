@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { TypeAnimation } from "react-type-animation";
@@ -60,8 +61,8 @@ export function Hero({ profile, introReady, boostActive = false }: HeroProps) {
             <Scene3D boostActive={boostActive} containerRef={sectionRef} />
           </div>
 
-          <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col items-center gap-12 px-6 pt-24 md:flex-row md:pt-0">
-            <div className="flex-1 text-center md:text-left">
+          <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col items-center gap-6 px-6 pt-20 md:flex-row md:gap-12 md:pt-0">
+            <div className="order-2 flex-1 text-center md:order-1 md:text-left">
               <motion.p
                 {...fadeUp(0.1, reducedMotion)}
                 className="mb-2 font-mono text-sm text-cyan-400"
@@ -144,19 +145,22 @@ export function Hero({ profile, introReady, boostActive = false }: HeroProps) {
               </motion.div>
             </div>
 
-            <div className="relative">
+            <div className="relative order-first md:order-2">
               <motion.div {...fadeUp(0.5, reducedMotion)} className="relative">
-                <div className="relative h-72 w-72 md:h-96 md:w-96">
+                <div className="relative isolate h-52 w-52 shrink-0 sm:h-60 sm:w-60 md:h-96 md:w-96">
                   <div
                     aria-hidden
-                    className="pointer-events-none absolute inset-x-6 bottom-14 top-6 rounded-full bg-cyan-500/5 blur-2xl"
+                    className="pointer-events-none absolute inset-x-1 bottom-4 top-1 z-0 rounded-full bg-cyan-500/8 blur-lg md:inset-x-6 md:bottom-14 md:top-6 md:blur-2xl"
                   />
                   {profile.profileImageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       src={profile.profileImageUrl}
                       alt={profile.fullName}
-                      className="relative h-full w-full object-contain object-bottom drop-shadow-[0_12px_40px_rgba(0,212,255,0.18)]"
+                      fill
+                      priority
+                      sizes="(max-width: 768px) 240px, 384px"
+                      quality={92}
+                      className="z-[1] object-contain object-bottom drop-shadow-[0_8px_28px_rgba(0,212,255,0.16)] md:drop-shadow-[0_12px_40px_rgba(0,212,255,0.18)]"
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-500/10 to-purple-500/10 font-mono text-6xl text-cyan-400">
@@ -164,7 +168,7 @@ export function Hero({ profile, introReady, boostActive = false }: HeroProps) {
                     </div>
                   )}
                 </div>
-                <div className="absolute -bottom-4 -right-4 rounded-lg border border-white/10 bg-[#12121a]/90 px-4 py-2 font-mono text-xs text-cyan-400 backdrop-blur-sm">
+                <div className="absolute -bottom-4 -right-4 hidden rounded-lg border border-white/10 bg-[#12121a]/90 px-4 py-2 font-mono text-xs text-cyan-400 backdrop-blur-sm sm:block">
                   {profile.title}
                 </div>
               </motion.div>
